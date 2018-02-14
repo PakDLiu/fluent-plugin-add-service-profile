@@ -1,4 +1,4 @@
-# Source plugin for sending heartbeats in colomanager message format for [Fluentd](http://fluentd.org)
+# Filter plugin for appending UCS service profile in the record for [Fluentd](http://fluentd.org)
 
 ## Requirements
 
