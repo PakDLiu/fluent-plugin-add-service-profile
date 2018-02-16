@@ -11,9 +11,10 @@
 
     <filter **>
         @type add_service_profile
+        ucsIp 1.1.1.1
         domain mydomain
         username myusername
-        ucsIp 1.1.1.1
+        passwordFile /etc/password/ucsPassword
     </filter>
 
 Will add new hash to record call "serviceProfile" with the detected chassis and blade.

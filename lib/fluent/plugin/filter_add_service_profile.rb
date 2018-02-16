@@ -4,9 +4,10 @@ module Fluent::Plugin
   class AddServiceProfile < Filter
     Fluent::Plugin.register_filter('add_service_profile', self)
 
+    config_param :ucsIp, :string
     config_param :domain, :string
     config_param :username, :string
-    config_param :ucsIp, :string
+    config_param :passwordFile, :string
 
     @@tokenFile = "/tmp/token"
 
@@ -85,7 +86,7 @@ module Fluent::Plugin
     end
 
     def getPassword()
-      File.read("/etc/password/ucsPassword").strip
+      File.read(passwordFile).strip
     end
   end
 end

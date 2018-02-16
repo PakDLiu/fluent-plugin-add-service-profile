@@ -9,9 +9,10 @@ class AddServiceProfile < Test::Unit::TestCase
 
     CONFIG = %[
         @type add_service_profile
+        ucsIp 1.1.1.1
         domain testDomain
         username testUsername
-        ucsIp 1.1.1.1
+        passwordFile /etc/password/ucsPassword
       ]
 
     def create_driver(conf = CONFIG)
