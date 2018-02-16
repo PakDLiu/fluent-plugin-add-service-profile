@@ -4,7 +4,6 @@ module Fluent::Plugin
   class AddServiceProfile < Filter
     Fluent::Plugin.register_filter('add_service_profile', self)
 
-    config_param :ucsIp, :string
     config_param :domain, :string
     config_param :username, :string
     config_param :passwordFile, :string
@@ -25,34 +24,33 @@ module Fluent::Plugin
 
       dn = message[bladeRegex,0]
 
-      serviceProfile = getServiceProfile(dn, 1)
+      serviceProfile = getServiceProfile(record["host"], dn, 1)
       record["serviceProfile"] = serviceProfile
       record
     end
 
-    def getServiceProfile(dn, retries)
+    def getServiceProfile(host, dn, retries)
       if retries > 5
         log.error "unable to login to UCS to get service profile"
         return ""
       end
 
-      token = getToken()
+      token = getToken(host)
 
       queryBody = "<configResolveDn cookie=\"%s\" dn=\"%s\"></configResolveDn>" % [token, dn]
-      response = callUcsApi(queryBody)
+      response = callUcsApi(host, queryBody)
       profile = response[/assignedToDn="([\d\w\/-]+)"/,1]
-
+      puts profile
       if profile.to_s.empty?
         log.info "login failed, retry ", retries
         File.delete(@@tokenFile)
-        profile = getServiceProfile(dn, retries + 1)
+        profile = getServiceProfile(host, dn, retries + 1)
       end
 
       return profile
     end
 
-    def getToken()
-
+    def getToken(host)
       if File.exist?(@@tokenFile)
         token = File.read(@@tokenFile)
         return token
@@ -61,7 +59,7 @@ module Fluent::Plugin
       password = getPassword()
       fullUsername = domain + "\\" + username
       loginBody = "<aaaLogin inName=\"#{fullUsername}\" inPassword=\"#{password}\"></aaaLogin>"
-      response = callUcsApi(loginBody)
+      response = callUcsApi(host, loginBody)
       token = response[/outCookie="([\d\w\/-]+)"/,1]
 
       File.open(@@tokenFile, "w") do |f|
@@ -71,8 +69,8 @@ module Fluent::Plugin
       return token
     end
 
-    def callUcsApi(body)
-      uri = URI.parse("https://#{ucsIp}/nuova")
+    def callUcsApi(host, body)
+      uri = URI.parse("https://#{host}/nuova")
       header = {'Content-Type': 'text/xml'}
 
       https = Net::HTTP.new(uri.host, uri.port)

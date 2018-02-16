@@ -9,7 +9,6 @@ class AddServiceProfile < Test::Unit::TestCase
 
     CONFIG = %[
         @type add_service_profile
-        ucsIp 1.1.1.1
         domain testDomain
         username testUsername
         passwordFile /etc/password/ucsPassword
@@ -22,10 +21,10 @@ class AddServiceProfile < Test::Unit::TestCase
                 return 'testPassword'
             end
 
-            def callUcsApi(body)
-                if body == "<aaaLogin inName=\"testDomain\\testUsername\" inPassword=\"testPassword\"></aaaLogin>"
+            def callUcsApi(host, body)
+                if body == "<aaaLogin inName=\"testDomain\\testUsername\" inPassword=\"testPassword\"></aaaLogin>" && host == "1.1.1.1"
                     return '<aaaLogin cookie="" response="yes" outCookie="1111111111/12345678-abcd-abcd-abcd-123456789000"> </aaaLogin>'
-                elsif body == "<configResolveDn cookie=\"1111111111/12345678-abcd-abcd-abcd-123456789000\" dn=\"sys/chassis-4/blade-7\"></configResolveDn>"                              
+                elsif body == "<configResolveDn cookie=\"1111111111/12345678-abcd-abcd-abcd-123456789000\" dn=\"sys/chassis-4/blade-7\"></configResolveDn>" && host == "1.1.1.1"
                     return '<lsServer assignedToDn="org-root/org-T100/ls-testServiceProfile"/>'
                 else
                     return ''
@@ -34,11 +33,11 @@ class AddServiceProfile < Test::Unit::TestCase
         end.configure(conf)
     end
 
-    def filter(messages)
+    def filter(records)
         d = create_driver
         d.run(default_tag: "default.tag") do
-            messages.each do |message|
-                d.feed(message)
+            records.each do |record|
+                d.feed(record)
             end
         end
         d.filtered_records
@@ -48,15 +47,17 @@ class AddServiceProfile < Test::Unit::TestCase
         d = create_driver
         assert_equal 'testDomain', d.instance.domain
         assert_equal 'testUsername', d.instance.username
-        assert_equal '1.1.1.1', d.instance.ucsIp
     end
 
     def test_filter
-        messages = [
-            { "message" => "2018 Feb  9 21:07:45 GMT: %UCSM-3-LINK_DOWN: [link-down][sys/chassis-4/blade-7/fabric-A/path-3/vc-1518]"}
+        records = [
+            { 
+                "message" => "2018 Feb  9 21:07:45 GMT: %UCSM-3-LINK_DOWN: [link-down][sys/chassis-4/blade-7/fabric-A/path-3/vc-1518]",
+                "host" => "1.1.1.1"
+            }
         ]
-        filtered_records = filter(messages)
-        assert_equal messages[0]['message'], filtered_records[0]['message']
+        filtered_records = filter(records)
+        assert_equal records[0]['message'], filtered_records[0]['message']
         assert_equal 'org-root/org-T100/ls-testServiceProfile', filtered_records[0]['serviceProfile']
     end
 end
