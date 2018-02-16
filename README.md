@@ -11,7 +11,6 @@
 
     <filter **>
         @type add_service_profile
-        ucsIp 1.1.1.1
         domain mydomain
         username myusername
         passwordFile /etc/password/ucsPassword
@@ -24,4 +23,4 @@ Will check syslog message for the following regex pattern:
     sys\/chassis-\d\/blade-\d
 
 If not found, the message will get passed on unchanged.
-If found, will log in to UCS at ip address 1.1.1.1 using mydomain\myusername and password in password file in /etc/password/ucsPassword. The login token will be cached in /tmp/token. It will then query UCS for the service profile associated with the chassis and blade id, then appened it to the record with key "serviceProfile"
+If found, will log in to UCS using the 'host' record from the source and using mydomain\myusername and password in password file in /etc/password/ucsPassword. The login token will be cached in /tmp/token. It will then query UCS for the service profile associated with the chassis and blade id, then appened it to the record with key "serviceProfile"
