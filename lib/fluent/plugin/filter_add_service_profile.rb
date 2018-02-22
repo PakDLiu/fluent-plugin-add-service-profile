@@ -4,6 +4,7 @@ module Fluent::Plugin
   class AddServiceProfile < Filter
     Fluent::Plugin.register_filter('add_service_profile', self)
 
+    config_param :ucsHostNameKey, :string
     config_param :domain, :string
     config_param :username, :string
     config_param :passwordFile, :string
@@ -24,7 +25,7 @@ module Fluent::Plugin
 
       dn = message[bladeRegex,0]
 
-      serviceProfile = getServiceProfile(record["host"], dn, 1)
+      serviceProfile = getServiceProfile(record[ucsHostNameKey], dn, 1)
       record["serviceProfile"] = serviceProfile
       record
     end
@@ -40,7 +41,7 @@ module Fluent::Plugin
       queryBody = "<configResolveDn cookie=\"%s\" dn=\"%s\"></configResolveDn>" % [token, dn]
       response = callUcsApi(host, queryBody)
       profile = response[/assignedToDn="([\d\w\/-]+)"/,1]
-      puts profile
+      
       if profile.to_s.empty?
         log.info "login failed, retry ", retries
         File.delete(@@tokenFile)

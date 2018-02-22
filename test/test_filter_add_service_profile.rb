@@ -9,6 +9,7 @@ class AddServiceProfile < Test::Unit::TestCase
 
     CONFIG = %[
         @type add_service_profile
+        ucsHostNameKey SyslogSource        
         domain testDomain
         username testUsername
         passwordFile /etc/password/ucsPassword
@@ -53,7 +54,7 @@ class AddServiceProfile < Test::Unit::TestCase
         records = [
             { 
                 "message" => "2018 Feb  9 21:07:45 GMT: %UCSM-3-LINK_DOWN: [link-down][sys/chassis-4/blade-7/fabric-A/path-3/vc-1518]",
-                "host" => "1.1.1.1"
+                "SyslogSource" => "1.1.1.1"
             }
         ]
         filtered_records = filter(records)
